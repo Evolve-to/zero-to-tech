@@ -24,12 +24,15 @@ def get_session_id(request: Request, response: Response) -> str:
     sid = request.cookies.get("session_id")      # 先看有没有纸条
     if not sid:                                  # 第一次来，没有——发一张
         sid = uuid.uuid4().hex                    # 一串随机、不重复的 id
-        response.set_cookie(
-            "session_id", sid,
-            httponly=True, samesite="lax",
-            secure=True,  
-            max_age=60 * 60 * 24 * 30,            # 记 30 天
-        )
+
+    secure_cookie = request.headers.get(
+        "x-forwarded-proto", request.url.scheme
+    ) == "https"
+    response.set_cookie(
+        "session_id", sid,
+        httponly=True, samesite="lax", secure=secure_cookie,
+        max_age=60 * 60 * 24 * 30,            # 记 30 天
+    )
     return sid
 
 profile = {
