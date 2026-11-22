@@ -3,7 +3,7 @@
 // 文字实验室的"输入区"卡片。这一节给"开始分析"接上了后端：
 // 点按钮就把输入的文字 POST 给 /api/analyze，拿到结果通过 onResult 交给父组件。
 // 请求出问题时用 try/catch 接住，在按钮上方给一行提示，不让界面无声失效。
-// 后端地址暂时写死在下面，跟着课件，这一节最后会把它收进 .env.local。
+// 使用同源 API 路径，生产环境由 Nginx 转发到 FastAPI。
 import { useState } from "react";
 
 export default function InputCard({ onResult }) {
@@ -14,7 +14,7 @@ export default function InputCard({ onResult }) {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8000/api/analyze", {
+      const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", 
