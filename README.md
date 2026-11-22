@@ -76,7 +76,6 @@ fastapi dev                   # → http://localhost:8000
 
 ```bash
 npm install
-cp .env.example .env.local    # 按下面「配置说明」填好
 npm run dev                   # → http://localhost:3000
 ```
 
@@ -92,11 +91,10 @@ cd ~/zero-to-tech
 git pull
 ```
 
-**2. 前端：装依赖、写配置、构建**
+**2. 前端：装依赖并构建**
 
 ```bash
 npm install
-cp .env.example .env.production   # 按下面「配置说明」填好
 npm run build                     # 产物进 out/，由 Nginx 提供服务
 ```
 
@@ -127,24 +125,21 @@ ps aux | grep fastapi         # 找到进程号
 kill 进程号                    # 停掉
 ```
 
-**5. 放行 8000 端口**
+**5. 配置 Nginx API 代理**
 
-去云平台控制台的安全组 / 防火墙，放行 8000 端口（80 端口应该已经放行）。
+确保 Nginx 将 `/api/` 转发到本机 `127.0.0.1:8000`。生产环境的前端使用同源 `/api/...` 路径，8000 端口无需对公网开放。
 
 **6. 验证**
 
-浏览器访问 `http://服务器IP`，打开文字实验室做一次分析，再看历史记录。
+浏览器访问部署域名，打开文字实验室做一次分析，再看历史记录。
 换一个浏览器（或无痕窗口）再试一次，两边的历史记录应该是互相看不到的。
+历史记录按浏览器 Cookie 中的会话 ID 区分；从 IP 切换到域名后，旧 IP 下的记录不会自动出现在域名下。
 
 ## 配置说明
 
-配置文件不进 Git，请照着 `.env.example` 自己建一份。
+后端配置文件不进 Git，请照着 `backend/.env.example` 自己建一份。
 
-**前端**：开发用 `.env.local`，生产构建用 `.env.production`
-
-| 键 | 说明 | 本地 | 线上 |
-| --- | --- | --- | --- |
-| `NEXT_PUBLIC_API_BASE_URL` | 后端接口地址 | `http://localhost:8000` | `http://服务器IP:8000` |
+前端不需要配置 API 地址：开发时请求 `http://localhost:8000`，生产时请求同源 `/api`，由 Nginx 转发。
 
 **后端**：`backend/.env`
 

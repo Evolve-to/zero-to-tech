@@ -11,7 +11,7 @@ import Nav from "./Nav.jsx";
 import PageHeading from "./PageHeading.jsx";
 import AnimatedCardGrid from "./AnimatedCardGrid.jsx";
 import { home } from "../data/site.js";
-const API = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { apiUrl } from "../lib/api.js";
 
 
 export default function HomeView() {
@@ -20,7 +20,7 @@ export default function HomeView() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const res = await fetch(`${API}/api/profile`);
+        const res = await fetch(apiUrl("/api/profile"));
         if (!res.ok) {
           throw new Error(`主页数据加载失败：${res.status}`);
         }

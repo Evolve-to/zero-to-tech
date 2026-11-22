@@ -5,6 +5,7 @@
 // 请求出问题时用 try/catch 接住，在按钮上方给一行提示，不让界面无声失效。
 // 使用同源 API 路径，生产环境由 Nginx 转发到 FastAPI。
 import { useState } from "react";
+import { apiUrl } from "../lib/api.js";
 
 export default function InputCard({ onResult }) {
   const [text, setText] = useState("今天的风很轻，适合把脑海里的想法慢慢写下来。");
@@ -14,7 +15,7 @@ export default function InputCard({ onResult }) {
     setError("");
 
     try {
-      const res = await fetch("/api/analyze", {
+      const res = await fetch(apiUrl("/api/analyze"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", 
