@@ -15,7 +15,7 @@ import "../css/cards.css";
 import "../css/lab.css";
 import "../css/responsive.css";
 
-const GA_MEASUREMENT_ID = "G-DZ5DVSFTLY";
+const GTM_CONTAINER_ID = "GTM-PPQXRT2N";
 
 export const metadata = {
   title: "zero to tech",
@@ -28,14 +28,13 @@ export default function RootLayout({ children }) {
       <head>
         <script
           async
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          src={`https://www.googletagmanager.com/gtm.js?id=${GTM_CONTAINER_ID}`}
         />
         <script
           dangerouslySetInnerHTML={{
             __html: `window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${GA_MEASUREMENT_ID}');`,
+gtag('js', new Date());`,
           }}
         />
       </head>
