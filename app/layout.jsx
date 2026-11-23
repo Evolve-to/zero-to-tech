@@ -31,7 +31,7 @@ function gtag(){dataLayer.push(arguments);}
 gtag('js', new Date());`}
         </Script>
         <Script
-          src="https://www.googletagmanager.com/gtm.js?id=GTM-KVL7QD6B"
+          src="https://www.googletagmanager.com/gtm.js?id=GTM-PPQXRT2N"
           strategy="afterInteractive"
         />
         <div className="app-shell">
