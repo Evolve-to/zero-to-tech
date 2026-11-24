@@ -1,157 +1,97 @@
-# zero-to-tech-4-5 · Next.js 版（模块 4.5 配套代码）
-
-4.5 的终点成品：把 4.4 的 React 项目整体搬到 Next.js。网站长相不变；变的是路由层（手搓 `useRoute` → 文件夹路由）和入口（`index.html` + `main.jsx` + `App.jsx` → `app/`）。
-
-## 跑起来
-
-```bash
-npm install
-npm run dev          # http://localhost:3000   （Next 默认端口是 3000）
-```
-
-## 把你的 4.4 项目（`zero-to-tech`）迁成这样：整包替换
-
-1. 把 `~/zero-to-tech` 里**除隐藏的 `.git` 外的所有文件删掉**。
-2. 把本 demo 下的所有文件拷进去（`node_modules`、`.next` 不用拷）。
-3. 跑起来确认还是那个网站：
-   ```bash
-   npm install
-   npm run dev          # http://localhost:3000
-   ```
-4. 确认无误后 `git add` / `commit` / `push`。
-
-## 项目结构
-
-```
-app/                     ← 文件夹 = 路由
-  layout.jsx             ← 全站外壳（页面包裹 + import 8 个 css）
-  page.jsx               ← /         → 渲染 <HomeView />
-  text-lab/page.jsx      ← /text-lab → 渲染 <TextLabView />
-components/
-  Nav.jsx                ← <Link> + usePathname（"use client"）
-  HomeView.jsx           ← 4.4 的 HomePage 改名
-  TextLabView.jsx        ← 4.4 的 TextLabPage 改名
-  PageHeading.jsx        ← 同 4.4
-  InputCard.jsx          ← 同 4.4（"use client"）
-  ResultCard.jsx         ← 同 4.4（"use client"）
-  AnimatedCardGrid.jsx   ← 同 4.4（"use client"）
-css/                     ← 8 个 css，同 4.4
-data/site.js             ← 同 4.4
-next.config.mjs          ← 空 {}
-```
-
-相比 4.4，没了 `index.html`、`src/main.jsx`、`src/App.jsx`、`src/router/useRoute.js`——这一坨被 `app/` 取代了。
-
 # 文字实验室
 
-一个中文文本分析小工具：输入一段话，给出情感倾向评分和全文拼音，
-并把每次分析的结果存下来，各人只看得到自己的那一份。
-
-零到全栈课程的贯穿项目。
+零到全栈课程的贯穿项目。输入一段中文，查看情绪分和全文拼音。分析记录存入数据库，每个访客可以查看自己的历史。
 
 ## 技术栈
 
-- 前端：Next.js（静态导出）＋ React
-- 后端：FastAPI ＋ uvicorn
-- 分析：snownlp（情感）、pypinyin（注音）
-- 存储：SQLite
-- 线上：Nginx
+- 前端用 Next.js（静态导出）和 React
+- 后端用 FastAPI 和 Uvicorn
+- 文本分析用 snownlp 和 pypinyin
+- 数据存储用 PostgreSQL 16，线上由 Nginx 提供静态文件并转发 API 请求
 
-## 本地跑起来
+## 项目结构
 
-需要：Node.js 18+、Python 3.10+
+| 路径 | 内容 |
+| --- | --- |
+| `app/`、`components/` | 页面和 React 组件 |
+| `css/`、`public/` | 样式和静态资源 |
+| `backend/main.py` | 分析和历史记录 API |
+| `backend/storage.py` | 数据库连接、建表和读写 |
+| `backend/requirements.txt` | 后端依赖 |
 
-**后端**
+## 准备环境和配置
+
+需要 Node.js 18.18+、Python 3.10+ 和 PostgreSQL 16。先启动 PostgreSQL，用管理员身份创建项目用户和数据库。
+
+```sql
+CREATE USER textlab_backend;
+CREATE DATABASE textlab OWNER textlab_backend;
+```
+
+在同一个 `psql` 会话里用 `\password textlab_backend` 设置密码。首次启动后端时会自动创建历史记录表和索引。
+
+参考项目里的 `.env.example` 和 `backend/.env.example` 准备配置文件。
+
+| 配置 | 本地 | 线上 |
+| --- | --- | --- |
+| 前端 `NEXT_PUBLIC_API_BASE_URL` | 在 `.env.local` 填 `http://localhost:8000` | 在 `.env.production` 留空，前端用相对路径访问 `/api/` |
+| 后端 `ALLOWED_ORIGINS` | `http://localhost:3000` | 站点地址，例如 `https://example.com` |
+| 后端 `DATABASE_URL` | 本地数据库的连接串 | 服务器数据库的连接串 |
+
+后端两项都写在 `backend/.env`。连接串形如 `postgresql://textlab_backend:PASSWORD@localhost:5432/textlab`，把 `PASSWORD` 换成对应环境的密码。真实密码只放在各自环境的 `.env` 里。
+
+## 本地运行
+
+在项目根目录打开两个终端。第一个终端用来启动后端，先按系统创建并激活虚拟环境。已有 `.venv` 时，直接激活即可。
+
+**macOS / Ubuntu**
 
 ```bash
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env          # 按下面「配置说明」填好
-fastapi dev                   # → http://localhost:8000
 ```
 
-**前端**（另开一个终端）
+**Windows（PowerShell）**
+
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+```
+
+激活后，安装依赖并启动后端。三个系统的写法一样。
+
+```bash
+pip install -r requirements.txt
+fastapi dev                     # http://localhost:8000
+```
+
+在另一个终端从项目根目录启动前端。
 
 ```bash
 npm install
-npm run dev                   # → http://localhost:3000
+npm run dev                     # http://localhost:3000
 ```
 
 ## 部署到服务器
 
-前提：服务器上已装好 Python 3.10+、Node.js 18+ 和 Nginx，
-且 Nginx 的站点根目录已指向本项目的 `out/`、监听 80 端口。
+服务器另需安装 Nginx。准备好 PostgreSQL 和线上配置后，按下面的顺序部署。
 
-**1. 拉取代码**
+1. **前端**。在项目根目录运行 `npm install` 和 `npm run build`，构建产物在 `out/`。
+2. **后端**。在 `backend` 创建并激活虚拟环境，执行 `pip install -r requirements.txt`。将下面的配置保存为 `/etc/systemd/system/zero-backend.service`，按实际部署账号和目录修改。
 
-```bash
-cd ~/zero-to-tech
-git pull
-```
+   ```ini
+   [Service]
+   User=ubuntu
+   WorkingDirectory=/home/ubuntu/zero-to-tech/backend
+   ExecStart=/home/ubuntu/zero-to-tech/backend/.venv/bin/fastapi run --host 127.0.0.1
+   Restart=always
 
-**2. 前端：装依赖并构建**
+   [Install]
+   WantedBy=multi-user.target
+   ```
 
-```bash
-npm install
-npm run build                     # 产物进 out/，由 Nginx 提供服务
-```
+   运行 `sudo systemctl daemon-reload` 和 `sudo systemctl enable --now zero-backend`。
 
-**3. 后端：建环境、装依赖、写配置**
-
-```bash
-cd backend
-python3 -m venv --prompt=zero-to-tech .venv   # 首次部署才需要
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env              # 按下面「配置说明」填好
-```
-
-**4. 后端：在后台跑起来**
-
-```bash
-nohup .venv/bin/fastapi run > backend.log 2>&1 &
-```
-
-`fastapi run` 是生产模式，监听 `0.0.0.0:8000`；`nohup ... &` 让它在
-SSH 断开后继续运行，日志写进 `backend.log`。
-
-查看日志、停止服务：
-
-```bash
-tail -f backend.log           # 看日志
-ps aux | grep fastapi         # 找到进程号
-kill 进程号                    # 停掉
-```
-
-**5. 配置 Nginx API 代理**
-
-确保 Nginx 将 `/api/` 转发到本机 `127.0.0.1:8000`。生产环境的前端使用同源 `/api/...` 路径，8000 端口无需对公网开放。
-
-**6. 验证**
-
-浏览器访问部署域名，打开文字实验室做一次分析，再看历史记录。
-换一个浏览器（或无痕窗口）再试一次，两边的历史记录应该是互相看不到的。
-历史记录按浏览器 Cookie 中的会话 ID 区分；从 IP 切换到域名后，旧 IP 下的记录不会自动出现在域名下。
-
-**7. 安全组 / 防火墙**
-
-只放行 **22（SSH）**、**80（HTTP）** 和 **443（HTTPS）**。**8000 不要放行**——后端只监听 `127.0.0.1`，由 Nginx 转发进去。
-
-**8. 验证**
-
-浏览器访问 `https://example.com`，地址栏不再标"不安全"；再敲 `http://` 开头的，应该自动跳到 `https://`。做一次分析、看一眼历史记录。
-
-
-## 配置说明
-
-后端配置文件不进 Git，请照着 `backend/.env.example` 自己建一份。
-
-前端不需要配置 API 地址：开发时请求 `http://localhost:8000`，生产时请求同源 `/api`，由 Nginx 转发。
-
-**后端**：`backend/.env`
-
-| 键 | 说明 | 本地 | 线上 |
-| --- | --- | --- | --- |
-| `ALLOWED_ORIGINS` | 允许跨源访问的前端地址，多个用逗号隔开 | `http://localhost:3000` | `http://服务器IP`（不带端口） |
+3. **Nginx**。网站根目录指向项目的 `out/`，页面路由用 `try_files $uri $uri.html $uri/ =404;`，在 `/api/` 的配置里用 `proxy_pass http://127.0.0.1:8000;`。预留给后端和数据库的 8000 和 5432 都留在本机。
